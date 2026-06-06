@@ -1,0 +1,322 @@
+/* 全局重置与基础样式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #000;
+    font-family: 'Courier New', monospace;
+    touch-action: manipulation;
+    position: fixed;
+    overscroll-behavior: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* 游戏容器 */
+#game-container {
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    background: #000;
+    z-index: 1;
+}
+
+/* Canvas画布 */
+#gameCanvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    -webkit-font-smoothing: antialiased;
+    background: #000;
+}
+
+/* 错误提示覆盖层 */
+#error-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 20px;
+}
+
+.error-content {
+    text-align: center;
+    color: #fff;
+    padding: 30px 20px;
+    max-width: 90%;
+}
+
+.error-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    animation: shake 0.5s ease-in-out infinite;
+}
+
+.error-text {
+    font-size: 18px;
+    margin-bottom: 24px;
+    color: #ff6b6b;
+    text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+    line-height: 1.5;
+}
+
+.error-content button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border: none;
+    padding: 14px 36px;
+    font-size: 16px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    /* 触摸优化 */
+    min-height: 48px;
+    min-width: 120px;
+}
+
+.error-content button:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-10px);
+    }
+
+    75% {
+        transform: translateX(10px);
+    }
+}
+
+/* 加载动画 */
+.loading {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #0f0;
+    font-size: 20px;
+    font-family: 'Courier New', monospace;
+    z-index: 1000;
+}
+
+.loading::after {
+    content: '';
+    animation: dots 1.5s steps(4, end) infinite;
+}
+
+@keyframes dots {
+
+    0%,
+    20% {
+        content: '';
+    }
+
+    40% {
+        content: '.';
+    }
+
+    60% {
+        content: '..';
+    }
+
+    80%,
+    100% {
+        content: '...';
+    }
+}
+
+/* ============ 移动端适配 ============ */
+
+/* 小屏手机 (< 375px) */
+@media screen and (max-width: 374px) {
+    .error-icon {
+        font-size: 40px;
+    }
+
+    .error-text {
+        font-size: 16px;
+    }
+
+    .error-content button {
+        padding: 12px 28px;
+        font-size: 14px;
+    }
+}
+
+/* 标准手机 (375px - 480px) */
+@media screen and (min-width: 375px) and (max-width: 480px) {
+    .error-text {
+        font-size: 18px;
+    }
+
+    .error-content button {
+        padding: 14px 32px;
+        font-size: 16px;
+    }
+}
+
+/* 大屏手机 (481px - 768px) */
+@media screen and (min-width: 481px) and (max-width: 768px) {
+    .error-icon {
+        font-size: 56px;
+    }
+
+    .error-text {
+        font-size: 20px;
+    }
+
+    .error-content button {
+        padding: 16px 40px;
+        font-size: 18px;
+    }
+}
+
+/* 短屏幕优化 (如横屏模式) */
+@media screen and (max-height: 500px) {
+    .error-icon {
+        font-size: 36px;
+        margin-bottom: 10px;
+    }
+
+    .error-text {
+        font-size: 14px;
+        margin-bottom: 16px;
+    }
+
+    .error-content {
+        padding: 20px 15px;
+    }
+
+    .error-content button {
+        padding: 10px 24px;
+        font-size: 14px;
+        min-height: 40px;
+    }
+}
+
+/* 禁用双击缩放和长按菜单 */
+body {
+    touch-action: pan-x pan-y;
+    -ms-touch-action: pan-x pan-y;
+}
+
+/* iOS Safari特定优化 */
+@supports (-webkit-touch-callout: none) {
+
+    /* 修复iOS 100vh问题 */
+    #game-container {
+        height: -webkit-fill-available;
+    }
+}
+
+/* 横屏模式优化 */
+@media screen and (orientation: landscape) and (max-height: 500px) {
+    .error-content {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 20px;
+        padding: 15px;
+    }
+
+    .error-icon {
+        margin-bottom: 0;
+        font-size: 40px;
+    }
+
+    .error-text {
+        margin-bottom: 0;
+        font-size: 14px;
+    }
+
+    .error-content button {
+        min-width: 100px;
+    }
+}
+
+/* 高对比度/深色模式支持 */
+@media (prefers-color-scheme: dark) {
+    body {
+        background: #000;
+    }
+}
+
+/* 减少动画偏好 */
+@media (prefers-reduced-motion: reduce) {
+    .error-icon {
+        animation: none;
+    }
+
+    .error-content button {
+        transition: none;
+    }
+}
+
+/* 触摸反馈优化 */
+@media (hover: none) and (pointer: coarse) {
+    .error-content button {
+        /* 增大触摸区域 */
+        padding: 16px 40px;
+        min-height: 52px;
+    }
+}
+
+/* 安全区域适配（刘海屏、底部手势条） */
+@supports (padding: max(0px)) {
+    html {
+        padding-top: max(0px, env(safe-area-inset-top));
+    }
+
+    body {
+        padding-top: max(0px, env(safe-area-inset-top));
+        padding-bottom: max(0px, env(safe-area-inset-bottom));
+        padding-left: max(0px, env(safe-area-inset-left));
+        padding-right: max(0px, env(safe-area-inset-right));
+    }
+
+    #game-container {
+        padding-top: max(0px, env(safe-area-inset-top));
+        padding-bottom: max(0px, env(safe-area-inset-bottom));
+        padding-left: max(0px, env(safe-area-inset-left));
+        padding-right: max(0px, env(safe-area-inset-right));
+    }
+}
+
+/* 打印样式（隐藏游戏） */
+@media print {
+    #game-container {
+        display: none;
+    }
+}
