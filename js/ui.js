@@ -457,10 +457,6 @@ class UIManager {
             this.renderAlert(gameState.alertLevel);
         }
 
-        // 连击提示
-        if (gameState.combo > 0) {
-            this.renderCombo(gameState.combo, gameState.isOverload);
-        }
     }
 
     /**
@@ -576,6 +572,13 @@ class UIManager {
             }
         }
 
+        // 警报文字
+        ctx.save();
+        ctx.fillStyle = alertLevel === 2 ? '#f00' : '#ff0';
+        ctx.font = `bold ${Math.floor(20 * this.scale)}px "Courier New", monospace`;
+        ctx.textAlign = 'center';
+        ctx.globalAlpha = 0.9;
+
         // 文字闪烁效果
         const textAlpha = 0.7 + Math.sin(Date.now() / 100) * 0.3;
         ctx.globalAlpha = textAlpha;
@@ -586,49 +589,6 @@ class UIManager {
 
         const text = alertLevel === 2 ? 'SYSTEM ALERT' : 'WARNING';
         ctx.fillText(text, width / 2, 80 * this.scale);
-        ctx.restore();
-    }
-
-    /**
-     * 渲染连击提示
-     */
-    renderCombo(combo, isOverload) {
-        const ctx = this.ctx;
-        const x = this.canvas.width / 2;
-        const y = this.canvas.height / 2 - 50 * this.scale;
-
-        ctx.save();
-
-        if (isOverload) {
-            // 过载模式 - 像素化效果
-            const pulse = 1 + Math.sin(Date.now() / 80) * 0.15;
-            ctx.scale(pulse, pulse);
-
-            // 发光效果
-            ctx.shadowColor = '#ff0';
-            ctx.shadowBlur = 25 * this.scale;
-
-            ctx.fillStyle = '#ff0';
-            ctx.font = `bold ${Math.floor(36 * this.scale)}px "Courier New", monospace`;
-            ctx.textAlign = 'center';
-            ctx.fillText('OVERLOAD!', x, y);
-
-            ctx.font = `bold ${Math.floor(24 * this.scale)}px "Courier New", monospace`;
-            ctx.fillStyle = '#fff';
-            ctx.fillText(`${combo}x COMBO`, x, y + 40 * this.scale);
-        } else {
-            // 普通连击
-            ctx.fillStyle = '#0f0';
-            ctx.font = `bold ${Math.floor(28 * this.scale)}px "Courier New", monospace`;
-            ctx.textAlign = 'center';
-
-            // 轻微发光
-            ctx.shadowColor = '#0f0';
-            ctx.shadowBlur = 10 * this.scale;
-
-            ctx.fillText(`${combo}x COMBO`, x, y);
-        }
-
         ctx.restore();
     }
 
@@ -723,24 +683,24 @@ class UIManager {
         if (currentLevel) {
             switch (currentLevel.type) {
                 case LevelType.DOCUMENT:
-                    failureMessage = '您的毕业论文内容清空了';
-                    
+                    failureMessage = '你的毕业论文内容清空了';
+                    titleText = '文档丢失';
                     break;
                 case LevelType.DESKTOP:
-                    failureMessage = '您的毕业论文文件被永久删除';
-                    
+                    failureMessage = '你的毕业论文文件被永久删除';
+                    titleText = '文件删除';
                     break;
                 case LevelType.BSOD:
-                    failureMessage = '您的电脑已崩溃';
-                    
+                    failureMessage = '你的电脑已崩溃';
+                    titleText = '系统崩溃';
                     break;
                 default:
                     failureMessage = '系统崩溃';
-                    
+                    titleText = '系统崩溃';
             }
         } else {
             failureMessage = '系统崩溃';
-            
+            titleText = '系统崩溃';
         }
 
         // 背景

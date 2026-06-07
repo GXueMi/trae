@@ -288,8 +288,7 @@ class GameEngine {
                     this.handleMenuInput(x, y);
                     break;
                 case GameState.LEVEL_INTRO:
-                    // 关卡开场动画期间点击跳过
-                    this.skipLevelIntro();
+                    // 关卡开场动画期间禁止跳过
                     break;
                 case GameState.PLAYING:
                     this.handleGameInput(x, y);
@@ -540,6 +539,7 @@ class GameEngine {
     startLevelIntro(levelIndex) {
         this.state = GameState.LEVEL_INTRO;
         this.currentLevelIndex = levelIndex;
+        this.levelManager.currentLevelIndex = levelIndex; // 同步更新关卡管理器的索引
 
         // 根据关卡索引选择对应的动画类型
         let levelType;
@@ -566,11 +566,18 @@ class GameEngine {
      */
     skipLevelIntro() {
         if (this.state === GameState.LEVEL_INTRO) {
+            // 如果有过渡动画且设置了目标关卡索引，使用目标关卡
+            const levelIndex = this.targetLevelIndex !== undefined ? this.targetLevelIndex : this.currentLevelIndex;
+
             // 直接进入游戏
             this.state = GameState.PLAYING;
-            this.startLevel(this.currentLevelIndex);
+            this.startLevel(levelIndex);
             this.uiManager.setState(UIState.PLAYING);
             audioManager.playBackgroundMusic();
+
+            // 重置过渡动画和目标关卡索引
+            this.levelTransition = null;
+            this.targetLevelIndex = undefined;
         }
     }
 
@@ -633,6 +640,9 @@ class GameEngine {
      */
     startLevelTransition(fromLevel, toLevel) {
         this.state = GameState.LEVEL_INTRO;
+        this.currentLevelIndex = fromLevel - 1; // 设置当前关卡索引（从0开始）
+        this.levelManager.currentLevelIndex = fromLevel - 1; // 同步更新关卡管理器
+        this.targetLevelIndex = toLevel - 1; // 保存目标关卡索引，用于跳过功能
 
         // 创建过渡动画
         if (fromLevel === 1 && toLevel === 2) {
@@ -698,9 +708,15 @@ class GameEngine {
 
         // 检查是否还有下一关
         if (this.levelManager.currentLevelIndex < 2) {
-            // 进入关卡过渡动画，直接进入下一关
+            // 重置所有动画引用，确保新动画能正常播放
+            this.levelTransition = null;
+            this.levelIntroManager.reset();
+            this.targetLevelIndex = undefined;
+
+            // 进入关卡过渡动画，先播放过渡动画再进入下一关开场动画
             const currentLevelNum = this.levelManager.currentLevelIndex + 1;
             const nextLevelNum = currentLevelNum + 1;
+            console.log(`Starting level transition from ${currentLevelNum} to ${nextLevelNum}, levelIndex: ${this.levelManager.currentLevelIndex}`);
             this.startLevelTransition(currentLevelNum, nextLevelNum);
         } else {
             // 所有关卡完成，显示胜利界面
@@ -792,12 +808,15 @@ class GameEngine {
             this.levelTransition.update(deltaTime);
 
             if (this.levelTransition.isComplete) {
-                // 过渡动画完成，根据当前关卡索引进入对应关卡开场动画
+                // 过渡动画完成，直接进入目标关卡游戏（跳过第二关和第三关的开场动画）
                 this.levelTransition = null;
-                // 如果是从第一关过渡（currentLevelIndex为0），进入第二关开场动画
-                // 如果是从第二关过渡（currentLevelIndex为1），进入第三关开场动画
                 const nextLevelIndex = this.levelManager.currentLevelIndex + 1;
-                this.startLevelIntro(nextLevelIndex);
+
+                // 直接进入游戏
+                this.state = GameState.PLAYING;
+                this.startLevel(nextLevelIndex);
+                this.uiManager.setState(UIState.PLAYING);
+                audioManager.playBackgroundMusic();
             }
         } else {
             this.levelIntroManager.update(deltaTime);
@@ -873,11 +892,6 @@ class GameEngine {
         // 清空画布
         this.ctx.clearRect(0, 0, this.width, this.height);
 
-        // 调试：每次渲染时打印状态
-        if (Math.random() < 0.05) { // 每20帧打印一次
-            console.log(`Rendering state: ${this.state}, canvas: ${this.width}x${this.height}`);
-        }
-
         switch (this.state) {
             case GameState.LEVEL_INTRO:
                 this.renderLevelIntro();
@@ -923,11 +937,6 @@ class GameEngine {
             this.levelIntroManager.render();
         }
 
-        // 显示跳过提示
-        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-        this.ctx.font = '14px "Courier New", monospace';
-        this.ctx.textAlign = 'center';
-        this.ctx.fillText('点击跳过', this.width / 2, this.height - 30);
     }
 
     /**

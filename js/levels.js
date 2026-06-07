@@ -19,7 +19,7 @@ const LevelConfig = {
     [LevelType.DOCUMENT]: {
         name: '文档保卫战',
         subtitle: 'The Document',
-        duration: 30,               // 30秒
+        duration: 20,               // 20秒
         background: 'document',
         virusTypes: [VirusType.NORMAL],
         maxViruses: 25,             // 大幅增加病毒数量
@@ -319,6 +319,18 @@ class Level {
             '使用Adam优化器进行训练...'
         ];
 
+        for (let i = 0; i < maxLines; i++) {
+            const text = sampleTexts[i % sampleTexts.length];
+            const corruption = Math.random() < 0.1; // 10%的行被侵蚀
+
+            lines.push({
+                text: text,
+                x: 30,
+                y: startY + i * lineHeight,
+                corruption: corruption,
+                corruptionProgress: corruption ? Math.random() : 0
+            });
+        }
 
         return {
             type: 'document',
@@ -452,21 +464,9 @@ class Level {
         ctx.shadowBlur = 0; // 重置阴影，确保文字没有绿色发光
 
         data.lines.forEach(line => {
-            if (line.corruption && line.corruptionProgress > 0) {
-                // 被侵蚀的文本显示为像素块
-                const textWidth = ctx.measureText(line.text).width;
-                const pixelSize = 8;
-
-                for (let px = 0; px < textWidth; px += pixelSize) {
-                    if (Math.random() < line.corruptionProgress) {
-                        ctx.fillStyle = `rgb(${Utils.randomInt(150, 255)}, 0, 0)`;
-                        ctx.fillRect(line.x + px, line.y - 12, pixelSize, pixelSize);
-                    }
-                }
-            } else {
-                ctx.fillStyle = '#000000';
-                ctx.fillText(line.text, line.x, line.y);
-            }
+            // 只显示正常文字，没有病毒入侵效果
+            ctx.fillStyle = '#000000';
+            ctx.fillText(line.text, line.x, line.y);
         });
     }
 

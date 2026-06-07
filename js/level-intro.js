@@ -69,7 +69,7 @@ class DocumentIntro {
     generateDocumentLines() {
         const lines = [];
         const lineHeight = 25;
-        const startY = 60;
+        const startY = 140; // 再往下移，避免和标题栏重叠
 
         const texts = [
             '新媒体环境下用户信息阅读行为研究',
@@ -339,9 +339,7 @@ class DocumentIntro {
             b: Math.max(100, 200 - progress * 100)
         };
 
-        // 标题动画开始
-        this.documentTitleScale = Utils.lerp(this.documentTitleScale, 1.2, deltaTime * 3);
-        this.documentTitleAlpha = Math.min(1, this.documentTitleAlpha + deltaTime * 2);
+        // 标题暂不显示，等文档完全被侵蚀后再出现
     }
 
     /**
